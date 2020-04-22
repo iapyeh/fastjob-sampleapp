@@ -1,0 +1,117 @@
+/*
+
+示範一個專案如何基於 objsh.BaseAuthProvider 實作自己的認證功能。
+使用的資料庫是objsh提供的objsh.NewLevelDbDict，該dict是基於Level DB。
+*/
+package auth
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"path/filepath"
+
+	objsh "github.com/iapyeh/fastjob"
+)
+
+var NewLevelDbDict = objsh.NewLevelDbDict
+
+// AccountProvider is globally accessible in project for account maintencance.
+var AccountProvider *DictAccountProvider
+
+// DictUserManager is LevelDB-based User Manager
+// It inherits "BaseAuthProvider" and
+// It has a persistant AccountProvider wich implements PersistantAccountStorage.
+type DictUserManager struct {
+	objsh.BaseAuthProvider
+	// This is a persistent database to store data of users.
+	//AccountProvider *DictAccountProvider
+}
+
+// DictAccountProvider is LevelDB-based persistent account database.
+// It implements the model.PersistentAccountStorage interface
+type DictAccountProvider struct {
+	accountDict objsh.Dict
+}
+
+// GetUser is required by fastjob authentication
+func (self *DictAccountProvider) GetUser(username string) objsh.User {
+	// Caution:
+	// The return value of self.GetUnitTestUser(username)
+	// Must be tested by if u != nil, If it returns directly,
+	// It will become non-nil even it is nil
+	if u := self.GetUnitTestUser(username); u != nil {
+		return u
+	}
+	return nil
+}
+
+// GetUnitTestUser is for account manipulation in project
+func (self *DictAccountProvider) GetUnitTestUser(username string) *UnitTestUser {
+	if data, err := self.accountDict.Get([]byte(username)); err == nil {
+		if user, err := self.Deserialize(data); err == nil {
+			return user
+		}
+	}
+	return nil
+}
+func (self *DictAccountProvider) CreateUnitTestUser(username string, password string) (*UnitTestUser, error) {
+	if NormalizeUsername(username) != username {
+		return nil, errors.New(fmt.Sprintf("Invalid Username:%v", username))
+	}
+
+	if existed := self.GetUser(username); existed != nil {
+		return nil, errors.New(fmt.Sprintf("Username Occupied by %s", existed))
+	}
+
+	user := NewUser(username) //{Avatar: Avatar{Username: username}}
+	user.SetActivated(true)
+	if len(password) > 0 {
+		user.SetPassword(password)
+	}
+	self.Serialize(&user)
+	return &user, nil
+}
+
+func (self *DictAccountProvider) Deserialize(data []byte) (*UnitTestUser, error) {
+	var user *UnitTestUser
+	err := json.Unmarshal(data, &user)
+	if err != nil {
+		log.Println("Deserialize user error:", err)
+		return nil, err
+	}
+	return user, nil
+}
+func (self *DictAccountProvider) Serialize(user *UnitTestUser) error {
+	data, err := json.Marshal(&user)
+	if err != nil {
+		return err
+	}
+	key := []byte(user.Username())
+	self.accountDict.Set(key, data)
+	return nil
+}
+
+// NewDictUserManager creates an instance of DictUserManager
+// It is an implementation of the  AuthHandler interface.
+// It is based on BaseAuthProvider, so it only have to implement AccountProvider
+func NewDictUserManager(dbpath string) DictUserManager {
+	AccountProvider = &DictAccountProvider{
+		accountDict: NewLevelDbDict(filepath.Join(dbpath, "account")), //username: user data in json
+	}
+	manager := DictUserManager{
+		BaseAuthProvider: objsh.NewBaseAuthProvider(
+			dbpath,
+			AccountProvider,
+		),
+	}
+
+	//manager.SetAccountProvider(AccountProvider)
+
+	// BaseAuthProvider will auto starts a maintenance job,
+	// If you know what you are doing, you can stop it by calling:
+	//manager.StopMaintenance()
+
+	return manager
+}

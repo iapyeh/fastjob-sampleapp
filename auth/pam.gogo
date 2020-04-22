@@ -1,0 +1,122 @@
+/*
+
+示範一個專案如何基於 objsh.BaseAuthProvider 實作自己的認證功能。
+使用的認證來源是 PAM （linux, MacOS)
+*/
+package auth
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"log"
+	"os"
+	osuser "os/user"
+
+	objsh "github.com/iapyeh/fastjob"
+	"github.com/msteinert/pam"
+)
+
+// Example from "github.com/msteinert/pam"
+// Caution:
+// 1. authentication by Pam is very slow.It is only suitable for internal site.
+// 2. Should be sudo to run the go main
+func pamAuthService(username string, passwd string) error {
+	t, err := pam.StartFunc("chkpasswd", username, func(s pam.Style, msg string) (string, error) {
+		switch s {
+		case pam.PromptEchoOff:
+			return passwd, nil
+		case pam.PromptEchoOn:
+			fmt.Print(msg + " ")
+			input, err := bufio.NewReader(os.Stdin).ReadString('\n')
+			if err != nil {
+				return "", err
+			}
+			return input[:len(input)-1], nil
+		case pam.ErrorMsg:
+			fmt.Print(msg)
+			return "", nil
+		case pam.TextInfo:
+			fmt.Println(msg)
+			return "", nil
+		}
+		return "", errors.New("Unrecognized message style")
+	})
+	if err != nil {
+		log.Println("error #1:", err)
+		return err
+	}
+	err = t.Authenticate(0)
+	if err != nil {
+		return err
+	}
+	//fmt.Println("Authentication succeeded!")
+	return nil
+}
+
+// AccountProvider is globally accessible in project for account maintencance.
+var pamAccountProvider *PamAccountProvider
+
+// PamUserManager is PAM-based User Manager
+// It inherits "BaseAuthProvider" and
+// It has a persistant AccountProvider wich implements PersistantAccountStorage.
+type PamUserManager struct {
+	objsh.BaseAuthProvider
+	// This is a persistent database to store data of users.
+	//AccountProvider *DictAccountProvider
+}
+
+// PamAccountProvider is PAM-based persistent account database.
+// It implements the model.PersistentAccountStorage interface
+type PamAccountProvider struct {
+}
+
+// GetUser is required by fastjob authentication
+func (self *PamAccountProvider) GetUser(username string) User {
+	// Caution:
+	// The return value of self.GetUnitTestUser(username)
+	// Must be tested by if u != nil, If it returns directly,
+	// It will become non-nil even it is nil
+	if user := self.GetPamUser(username); user != nil {
+		fmt.Println("pan Getting user", user)
+		return user
+	}
+	return nil
+}
+func (self *PamAccountProvider) CheckPassword(user User, password2check string) bool {
+	if err := pamAuthService(user.Username(), password2check); err == nil {
+		return true
+	}
+	return false
+}
+
+// GetUnitTestUser is for account manipulation in project
+func (self *PamAccountProvider) GetPamUser(username string) *UnitTestUser {
+	u, err := osuser.Lookup(username)
+	if err != nil {
+		fmt.Println("Getting user", username, "err=", err)
+		return nil
+	}
+	fmt.Println("Getting user success", u)
+	user := NewUser(username)
+	user.SetActivated(true)
+	return &user
+}
+
+// NewDictUserManager creates an instance of DictUserManager
+// It is an implementation of the  AuthHandler interface.
+// It is based on BaseAuthProvider, so it only have to implement AccountProvider
+func NewPamUserManager(dbpath string) PamUserManager {
+	pamAccountProvider := PamAccountProvider{}
+	manager := PamUserManager{
+		BaseAuthProvider: objsh.NewBaseAuthProvider(dbpath, nil),
+	}
+
+	manager.SetAccountProvider(&pamAccountProvider)
+
+	// BaseAuthProvider will auto starts a maintenance job,
+	// If you know what you are doing, you can stop it by calling:
+	//manager.StopMaintenance()
+
+	return manager
+}

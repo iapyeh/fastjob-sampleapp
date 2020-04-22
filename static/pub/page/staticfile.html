@@ -1,0 +1,70 @@
+<div>
+    <tabs style="height:30px">
+        <tab data-id="Test"  data-active="1">Test</tab>
+        <tab data-id="Benchmark">Benchmark</tab>
+        <tab data-id="Go">Go Example</tab>
+        <tab data-id="Doc">Docs</tab>
+    </tabs>
+
+    <!--  GO -->
+    <div class="tab-content Go">
+    <h4>Static Files</h4>
+    <p>
+        Serving .html, .jpg, .js, .css files.
+    </p>
+    <p>
+        <code>fastjob.Router.File()</code> is for serving static files.
+    </p>
+    <p>
+
+    </p>
+<div class="code">
+<p>Example from unittest/route.go</p>
+<pre>
+import(
+    fastjob "github.com/iapyeh/fastjob"
+)
+
+Router := fastjob.Router
+cwd, _ := os.Getwd()
+
+// Expose folder "../fastjob/static/file" as url "/fastjob"
+// For public accessible
+Router.File("/fastjob", filepath.Join(cwd, "..", "fastjob", "static", "file"), fastjob.PublicMode)
+
+// Expose folder "./pri" as url "/unittest/pri"
+// For authenticated users only
+Router.File("/unittest/pri", filepath.Join(cwd, "static", "pri"), fastjob.ProtectMode)
+
+// ... other routes
+
+// Put the "/" at bottom (lowest priority)
+Router.File("/", filepath.Join(cwd, "static", "pub"), fastjob.PublicMode)
+</pre>
+</div>        
+    </div> 
+
+    <!--  How To -->
+    <div class="tab-content Doc">
+        <code>fastjob.Router.File(UrlPath, FolderPath, ACL)</code>
+    </div> 
+
+    <!--  Test -->
+    <div class="tab-content Test">
+        <featuretest>
+            <query><url>/page/staticfile_test.html</url>
+            <expect>
+                <status>200</status>
+                <response>Hello World</response>
+            </expect>
+        </featuretest>
+    </div> 
+
+    <!--  Benchmark -->
+    <div class="tab-content Benchmark">
+        <h4>Benchmark</h4>
+        <benchmark
+            url="/page/staticfile_test.html"
+        />
+    </div> 
+</div>

@@ -1,0 +1,102 @@
+<div class="page">
+    <div class="tabs" style="height:30px">
+        <tab data-id="Test" data-active="1">Testing</tab>
+        <tab data-id="Benchmark">Benchmark</tab>
+        <tab data-id="Go">Go</tab>
+        <tab data-id="Python">Python</tab>
+        <tab data-id="Doc">Docs</tab>
+    </div>
+
+    <!--  GO -->
+    <div class="tab-content Go">
+    <h4>Download Files</h4>
+<div class="code">
+<p>Example from unittest/route.go</p>
+<pre>
+
+</pre>
+</div>        
+    </div> 
+
+    <div class="tab-content Python">
+        <h4>Download Files</h4>
+        <div class="code">
+<p>Example from unittest/pytest/pyroutes.py</p>
+
+<p>Dynamic generated content</p>
+<pre>
+@Router.Get('/unittest/py/download',PublicMode)
+def py_download(ctx):
+    # Set response header
+    ctx.response.header.set('Content-Disposition','attachment; filename="settings.json"')
+    content = json.dumps({
+        'name':'Mizuno',
+        'score':'87'
+    })
+    return content
+</pre>
+<p>Static content</p>
+<pre>
+@Router.Get('/unittest/py/getimage_by_sendfile',PublicMode)
+def getimage_by_sendfile(ctx):
+    
+    abspath = os.path.abspath(os.path.normpath(os.path.join(os.path.dirname(__file__),'downloadtest.png')))
+    
+    # Set response header
+    ctx.response.header.set('Content-Disposition','attachment; filename="downloadtest.jpg"')
+    
+    # Call ctx.sendfile()
+    ctx.sendfile(abspath)
+    
+    # but must not return anything (aka return None)
+    #return
+</pre>
+        </div>        
+    </div> 
+        
+    <!--  How To -->
+    <div class="tab-content Doc">
+        <code>fastjob.Router.File(UrlPath, FolderPath, ACL)</code>
+    </div> 
+
+    <!--  Test -->
+    <div class="tab-content Test">
+        <featuretest url="/unittest/py/download">
+            <expected>
+                <header>/content-disposition: attachment; filename=".*"/</header>
+                content-length: 33
+                content-type: text/plain; charset=utf-8
+                date: Tue, 19 Nov 2019 15:27:26 GMT
+                server: UnitTest Server
+                <response>{"name": "Mizuno", "score": "87"}</response>
+            </expected>
+        </featuretest>
+    </div>
+    <!--  Benchmark -->
+    <div class="tab-content Benchmark">
+        <h4>Benchmark</h4>
+        <benchmark/>
+    </div> 
+
+</div>
+
+<script language="javascript">
+    var url = '/unittest/py/download'
+    app.registerFeatureTest({
+        target:document.querySelector('featuretest'),
+        props:{
+            expected:document.querySelector('expected'),
+            options:{
+                url:url,
+            }
+        }
+    })
+    app.registerBenchmark({
+        target:document.querySelector('benchmark'),
+        props:{
+            options:{
+                url:url
+            }
+        }
+    })    
+</script>

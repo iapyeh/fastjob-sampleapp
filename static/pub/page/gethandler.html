@@ -1,0 +1,128 @@
+    <tabs style="height:30px">
+        <tab data-id="Go">Go Example</tab>
+        <tab data-id="Python">Python Example</tab>
+        <tab data-id="Doc">Docs</tab>
+    </tabs>
+
+    <!--  GO Example-->
+    <div class="tab-content Go">
+    <h4>Handle "Get" Requests</h4>
+    <p>
+        
+    </p>
+    <p>
+        <code>fastjob.Router.Get()</code>
+    </p>
+    <p>
+
+    </p>
+<div class="code">
+<p>Handler</p>
+<pre>
+import(
+    fastjob "github.com/iapyeh/fastjob"
+)
+
+// whoamiHandler is a Get handler
+func whoamiHandler(ctx *RequestCtx) {
+    if ctx.User != nil {
+        fmt.Fprint(ctx, ctx.User.Username())
+    } else {
+        fmt.Fprint(ctx, "guest")
+    }
+}
+
+// Register "/pub/whoami" to call whoamiHandler
+fastjob.Router.Get("/pub/whoami", whoamiHandler , fastjob.PublicMode)
+
+// Register "/pub/whoami" to call whoamiHandler
+fastjob.Router.Get("/pri/whoami", whoamiHandler , fastjob.ProtectMode)
+
+</pre>
+</div>        
+    </div> 
+
+     <!--  Python Example-->
+     <div class="tab-content Python">
+            <h4>Handle "Get" Requests</h4>
+            <p>
+                
+            </p>
+            <p>
+                <code>fastjob.Router.Get()</code>
+            </p>
+            <p>
+        
+            </p>
+        <div class="code">
+
+<p>In routes.go, tell Go-server to import py/pyroutes.py</p>
+<pre>
+import(
+    fastjob "github.com/iapyeh/fastjob"
+)
+Py3 := fastjobpy.NewPy3()
+Py3.ImportModule("py/pyroutes.py")
+</pre>
+
+<p>In py/pyroutes.py, implement handlers in Python</p>
+<pre>
+from fastjob import Router, ACL
+
+# handles "/pub/whoami" 
+@Router.Get('/pub/whoami',ACL.PublicMode)
+def whoami(ctx):
+    # would return 'guest', because ctx.user is None in a public-mode handler.
+    username =  ctx.user.username if ctx.user else 'guest' 
+    return username
+
+# handles "/pri/whoami" 
+@Router.Get('/pri/whoami',ACL.ProtectMode)
+def whoami(ctx):
+    username =  ctx.user.username if ctx.user else 'guest' 
+    return username
+</pre>
+
+<p> Getting query parameters by <code>ctx.peek</code></p>
+<pre>
+# handles "/pri/whoami?name=John"
+@Router.Get('/pri/sayhello',ACL.ProtectMode)
+def sayhello(ctx):
+    # since this is a protect-mode handler, ctx.user is accessible.
+    username =  ctx.user.username
+
+    # takes the query parameters
+    name = ctx.peek('name')
+    age  = ctx.peek('age', 17.5) # with default value
+    
+    ret = 'Hello %s your name %s sounds great!' % (username, name)
+    if (float(age) < 18): ret += ', Do not stay outside after AM1'
+    
+    return ret
+</pre>
+<p>
+    Setting response headers by <code>ctx.setHeader</code>
+</p>
+<pre>
+@Router.Get('/unittest/py/getbinary',ACL.PublicMode)
+def getbinary(ctx):
+    download = ctx.peek('download')
+    path = os.path.normpath(os.path.join(os.path.dirname(__file__),'downloadtest.png'))
+    with open(path,'rb') as fd:
+        content = fd.read()
+    ctx.setHeader('Content-Type','image/png')
+    ctx.setHeader('Content-Length',str(len(content)))
+    if download:
+            ctx.setHeader('Content-Disposition','attachment; filename="downloadtest.png"')
+    return content
+</pre>
+
+
+</div>        
+    </div>    
+
+<!--  How To -->
+<div class="tab-content Doc">
+    
+</div> 
+

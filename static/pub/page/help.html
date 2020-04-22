@@ -1,0 +1,62 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div>
+            <h3>Expect Fields</h3>
+            
+            <a anchor="status"><h4>status, header, response</h4></a>
+            <p> "status" matches the response status code,
+                such as 200, 404, etc.
+                It can be a regular like /2.*/ to match all 2xx
+            </p><p>
+                "header", "response" are the same to matching http response headers (string of multiple lines)and
+                reponse body (string) respectively. 
+            </p>
+            </p><p>
+                Multiple condistions should be replaced line by line.
+                Multiple condistions are logically concated by "AND".
+                Also, "status", "header" and "reponse" conditions are verified as "AND" them all.
+            </p>
+            
+            <a anchor="validate"><h4>validate(), responseType, renderResponse()</h4></a>
+            <p> "validate" is a function(response, xhr, promise).
+                It should resolve or reject the promise to indicate if
+                the testing is passed or not.</p>
+            <p>For example:
+                <pre style="padding-left:20px">
+(response, xhr, promise) => {
+    if (/hello/.test(reponse)) promise.resolve()
+    else promise.reject('you should say hello first')
+}
+                </pre>
+            </p><p>
+                if "validate" is set, "status", "header", "response" settings
+                will be ignored.
+            </p>
+
+            <a anchor="responseType"><h4>responseType</h4></a>
+            <p>
+                if "responseType" is given, it would be set to xhr.responseType.
+                When you have a customize validate() function, you may want responseType to be "json"
+                for easier processing.
+            </p>
+            <p>
+                When you have a customize renderResponse() function to render img response, you may want responseType to be "blob"
+                for getting base64 url as "src".
+            </p>
+
+            <a anchor="responseType"><h4>renderResponse()</h4></a>
+            <p>
+                You can use renderResponse() to customize rendering of response.
+                For example, setting the responsetype to "blob" and renderResponse() to be.
+                <pre style="padding-left:20px">
+(response) => {
+    let url = URL.createObjectURL(response)
+    return '&lt;img src="' + url + '" style="height:200px"/&gt;'
+}
+                </pre>
+            </p>            
+        </div>
+    </body>
+</html>

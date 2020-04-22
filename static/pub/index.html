@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>    
+    <link rel="stylesheet" type="text/css" href="/fastjob/fontawesome.css" />
+    <link rel="stylesheet" type="text/css" href="/fastjob/solid.css" />
+    <script type="text/javascript" src="/fastjob/jquery.3.3.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/fastjob/w2ui-1.5.rc1.min.css" />
+    <script type="text/javascript" src="/fastjob/w2ui-1.5.rc1.min.js"></script>
+
+    <script type="text/javascript" src="/fastjob/objshpb.js"></script>
+    <script type="text/javascript" src="/fastjob/sdk.js"></script>
+    <!--
+    <script type="text/javascript" src="index.js"></script>
+    -->
+    <script type="text/javascript" src="grpcstylepb.js"></script>
+
+    <script type="text/javascript" src="component/bundle.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="component/bundle.css" />
+    <style>
+        li{
+            margin:0px 0px;
+            padding:10px 10px;
+            list-style:none;
+            border-bottom:solid 1px #c0c0c0;
+        }
+        input{
+            font-size: 16px;
+            height:25px;
+        }
+    </style>
+<style>
+    /* style related to app of Svelte.js goes here */
+    #app{
+        width:100vw;
+        height:100vh;
+    }
+</style>
+<script>
+    /* script related to app of Svelte.js goes here */
+
+    var namespace = 'unittest_' //same as in main.js
+    
+    var $layout // w2layout instance
+    $(function(){
+        $layout = w2ui[namespace + 'layout']
+        /*
+        var protected = false
+        var url = "ws://"+location.host+"/unittest/"+(protected ? "pri/" : "pub/")+"tree"
+        var addLine = console.log
+        window.objshSDK.useTree('Unittest',url).done(function(tree){
+            tree.onannouce = function(content){addLine("Tree Announce>> "+content)}
+            window.testBenchmark = function(kill){
+                var path = 'Testing.Benchmark'
+                //var path = 'Testing.SubprocessTest'
+                var flag = 0
+                var args = [flag]
+                var kw = {}
+                var pbMsg = null
+                var cmd =  tree.call(path,args,kw,pbMsg)
+                if (kill){
+                    setTimeout(function(){
+                        cmd.kill().done(function(response){
+                            console.log(response)
+                        }).fail(function(retcode,errmsg){
+                            console.log([retcode,errmsg])
+                        })
+                    },1000)
+                }
+                cmd.then(function(response){
+                    addLine('THEN '+JSON.stringify(response))
+                }).progress(function(response){
+                    addLine('Progress '+JSON.stringify(response))
+                }).done(function(response){
+                    addLine('DONE '+JSON.stringify(response))
+                }).fail(function(retcode, errmsg){
+                    addLine('Error '+retcode+' '+errmsg)
+                })            
+
+            }
+        })
+        */
+    })
+
+</script>   
+</head>
+<body style="margin:0;padding:0;font-size:16px" >
+    <div id="app"></div>
+    <!--
+    <ul>
+        <li id="login-form"><div>
+            <div style="font-size:16px !important">
+                <input placeholder="username" id="username" value="admin"><br/>
+                <input placeholder="password" id="password" value="1234"><br/>
+                <button class="w2ui-btn" id="login-btn">Login</button>
+            </div>
+        </div></li>
+        <li id="logout-form"><a id="logout-btn" href="">Logout <span class="username"></span></span></a></li>
+        <li><a target="blank" href="../pri/unittest/index.html">private, static file</a></li>
+        <li>
+            <div style="font-size:16px">
+                <span id="ws-options">
+                    <input type="radio" name="ws-type" id="regular-ws">Websocket (不能作echo test,只能輸入對話)
+                    <br/>
+                    <input type="radio" name="ws-type" id="protected-ws">Protected Websocket (需登入不能作echo test,只能輸入對話)
+                    <br/>
+                    <input type="radio" name="ws-type" id="ws-protobuf">With ProtocolBuffer（可以作echo test,不能輸入對話）
+                    <br/>
+                    <input type="radio" name="ws-type" id="ws-protobuf-json">With ProtocolBuffer Json （可以作echo test,不能輸入對話）
+                    <br/>
+                    <input type="radio" name="ws-type" id="ws-json" checked>With Json（可以作echo test,不能輸入對話）
+                </span>
+                <br/>
+                <button id="ws-connect-btn" class="w2ui-btn">Connect Websocket</button>
+                <button id="ws-connect-close-btn" class="w2ui-btn" style="display:none">Close</button>
+            </div>
+            <div id="connected-area" style="display:none">
+                <div>
+                    Thread:<input id="thread" value="20">, Duration:<input id="duration" value="3">
+                    <button id="ws-echo-btn" class="w2ui-btn">Echo Test</button>
+                </div>
+                <div>
+                    <input id="ws-input"/>
+                    <button id="ws-send-btn" class="w2ui-btn">Send</button>
+                </div>
+            </div>
+            <div id="ws-response" style="overflow:auto;height:200px;width:80%;padding:10px;background-color:#f0f0f0;border:solid 1px #c0c0c0"></div>
+            <button class="w2ui-btn" onclick="javascript:void($('#ws-response').html(''))">Clear</button>
+        </li>
+        <li>
+            <div id="api-area">
+                <input type="checkbox" id="protected-api">Protected API
+                <button class="w2ui-btn" id="ws-connect-api-btn" class="w2ui-btn">Connect API Websocket</button>
+                <select id="node">
+                        <option  value="Hello.World">Hello.World(Not Found)</option>
+                        <option value="UnitTest.World">UnitTest.World(Not Found)</option>
+                    <option value="UnitTest.Hello" args="world,how are you" kw="x=1,y=2">UnitTest.Hello("World","how are you",{"x":"1","y":"2"})</option>
+                    <option  value="UnitTest.Hello" args="world,how are you">UnitTest.Hello("World","how are you")</option>
+                    <option value="UnitTest.Hello" args="world">UnitTest.Hello("World")</option>
+                    <option >UnitTest.Hello</option>
+                </select>
+                <button class="w2ui-btn" id="ws-call-api-btn">Call</button>
+        </li>
+        <li>
+            <div>
+                <input type="checkbox" id="tree-protected" onclick="$('#tree-path').val('Member.UnitTest.Progress')">Protected;
+                Tree path:
+                <input id="tree-path" placeholder="" value="Tree.UnitTest.Progress">
+                <select onchange="$('#tree-path').val($(this).val())">
+                    <option>Tree.UnitTest.Progress</option>
+                    <option>Tree.UnitTest.Hello</option>
+                    <option>Tree.UnitTest.Sleep</option>
+                    <option>Tree.UnitTest.Clock</option>
+                    <option>Tree.$chat.Join</option>
+                </select>
+                Args:
+                <input id="tree-call-args" placeholder="arg1,arg2,..." value="">
+                Kw:
+                <input id="tree-call-kw" placeholder="interval=1,times=1" value="" style="width:200px">
+                <button class="w2ui-btn" id="ws-call-tree-btn">Tree Call</button>
+                <span id="server-time">--:--</span>
+            </div>
+            <div>
+                <div style="font-size:16px !important">
+                    <button class="w2ui-btn " id="chat-join-btn">Chat Join</button>
+                    <select id="chat-room">
+                        <option value="unittest-1">UnitTest 1</option>
+                        <option value="unittest-2">UnitTest 2</option>
+                    </select>
+                    <input id="chat-talk" placeholder="say here" value="hello">
+                    Duplicate <input style="width:50px" id="chat-talk-duplicate" value="5000">
+                    <button class="w2ui-btn " id="chat-talk-btn">Chat Talk</button>
+                    <button class="w2ui-btn w2ui-btn-red" id="chat-exit-btn">Exit Chat</button>
+                </div>
+            </div>
+    
+        </li>
+        <li>
+            <div>
+                gRPC Style:
+                <input id="grpc-greeting" placeholder="Greeting" value="good day" style="width:200px">
+                <button class="w2ui-btn" id="grpc-style-btn">Send</button>
+            </div>
+        </li>        
+        <li>
+            <div>
+                Python Websocket Handler (ECHO)
+                <button class="w2ui-btn" id="pyws-connect-btn">Open</button>
+                <input id="pyws-message" placeholder="message" value="good day" style="width:200px">
+                <button class="w2ui-btn" id="pyws-send-btn">Send</button>
+            </div>
+        </li>        
+        <li>
+            <input type="checkbox" id="protected-up">Protected Upload
+            <div style="font-size:16px !important">
+                <input type="file" id="file">
+                <button style="font-size:16px !important" id="upload-btn">Upload</button>
+            </div>
+        </li>
+        <li><a target="playground" href="/playground/file/index.html">Playground</a></li>
+    </ul>
+    -->
+</body>
+</html>
