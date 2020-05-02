@@ -4432,3 +4432,13 @@
 12:01:22.551868 version@stat F·[2 1] S·672B[448B 224B] Sc·[0.50 0.00]
 12:01:22.584892 db@janitor F·5 G·0
 12:01:22.585911 db@open done T·82.8847ms
+=============== Apr 22, 2020 (CST) ===============
+12:12:40.243008 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:12:40.244773 version@stat F·[2 1] S·672B[448B 224B] Sc·[0.50 0.00]
+12:12:40.245261 db@open opening
+12:12:40.246530 journal@recovery F·1
+12:12:40.265105 journal@recovery recovering @5716
+12:12:40.274489 memdb@flush created L0@5718 N·1 S·224B "admin,v3509":"admin,v3509"
+12:12:40.292415 version@stat F·[3 1] S·896B[672B 224B] Sc·[0.75 0.00]
+12:12:40.313011 db@janitor F·6 G·0
+12:12:40.313751 db@open done T·68.4512ms
