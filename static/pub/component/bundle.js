@@ -1,5 +1,5 @@
 
-(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.head.appendChild(r) })(window.document);
+(function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
 var app = (function () {
     'use strict';
 
@@ -433,26 +433,30 @@ var app = (function () {
     }
 
     /*
-     use Svelte store as
+     This is a utility module. use Svelte store as
      1. an event channel
      2. a configuration store
      3. a constant / singleton (such as jquery ) store
     */
-    //import jQuery from "jquery";
+
+
+    let states = {};
+
+    // Initially hard coded configuration
+    const config = {
+        loginUrl : '/login'
+        ,logoutUrl : '/pri/logout'
+        // see what headers sent by this browser
+        // used for benchmark (wrk) to set headers
+        ,allHeadersUrl:'/pri/allheaders'
+        ,allSidebarNodesUrl:'/pri/static/sidebarAllNodes.json'
+    };
+    states['config'] = readable(config);
 
     /* 
      Svelte store-based event system 
     */
 
-    let states = {};
-    const config = {
-        loginUrl : '/unittest/login'
-        ,logoutUrl : '/unittest/pri/logout'
-        // see what headers sent by this browser
-        // used for benchmark (wrk) to set headers
-        ,allHeadersUrl:'/unittest/pri/allheaders'
-    };
-    states['config'] = readable(config);
     const importState = (key,defaultValue) =>{
         if (typeof(states[key]) == 'undefined'){
             states[key] = writable((typeof defaultValue == 'undefined' ? null : defaultValue));
@@ -516,7 +520,6 @@ var app = (function () {
         once: onceEvent,
         fire:fireEvent
     };
-
 
     // in  *.js, $state is not accessible, call getState instead.
     /*
@@ -1743,10 +1746,10 @@ var app = (function () {
     			t = space();
     			div1 = element("div");
     			attr_dev(div0, "class", "LeftPanel svelte-1skflu6");
-    			add_location(div0, file$4, 104, 0, 3404);
+    			add_location(div0, file$4, 99, 0, 3167);
     			attr_dev(div1, "class", "LeftPanelToolbar svelte-1skflu6");
-    			add_location(div1, file$4, 105, 0, 3434);
-    			add_location(div2, file$4, 103, 0, 3398);
+    			add_location(div1, file$4, 100, 0, 3197);
+    			add_location(div2, file$4, 98, 0, 3161);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -1777,6 +1780,7 @@ var app = (function () {
     }
 
     function instance$5($$self, $$props, $$invalidate) {
+    	let $config;
     	let $user;
     	let $layout;
     	let namespace = importState("namespace");
@@ -1785,15 +1789,11 @@ var app = (function () {
     	component_subscribe($$self, user, value => $$invalidate("$user", $user = value));
     	let message = importState("message");
     	let config = importState("config");
+    	validate_store(config, "config");
+    	component_subscribe($$self, config, value => $$invalidate("$config", $config = value));
     	let layout = importState("layout");
     	validate_store(layout, "layout");
     	component_subscribe($$self, layout, value => $$invalidate("$layout", $layout = value));
-
-    	let api = {
-    		list: "/unittest/pri/static/sidebarAllNodes.json",
-    		refresh: "/unittest/pri/sidebar/refresh"
-    	};
-
     	let username = "";
 
     	let nodes = [
@@ -1867,15 +1867,15 @@ var app = (function () {
     			onClick(evt) {
     				switch (evt.target) {
     					case "refresh":
-    						render(true);
+    						render();
     						break;
     				}
     			}
     		});
     	}
 
-    	function render(refresh) {
-    		let url = refresh ? api.refresh : api.list;
+    	function render() {
+    		let url = $config.allSidebarNodesUrl;
 
     		jQuery.getJSON(url, testing_nodes => {
     			if (w2ui["LeftPanel"]) w2ui["LeftPanel"].destroy();
@@ -1918,16 +1918,16 @@ var app = (function () {
     		if ("namespace" in $$props) namespace = $$props.namespace;
     		if ("user" in $$props) $$invalidate("user", user = $$props.user);
     		if ("message" in $$props) message = $$props.message;
-    		if ("config" in $$props) config = $$props.config;
+    		if ("config" in $$props) $$invalidate("config", config = $$props.config);
     		if ("layout" in $$props) $$invalidate("layout", layout = $$props.layout);
-    		if ("api" in $$props) api = $$props.api;
     		if ("username" in $$props) username = $$props.username;
     		if ("nodes" in $$props) nodes = $$props.nodes;
+    		if ("$config" in $$props) config.set($config = $$props.$config);
     		if ("$user" in $$props) user.set($user = $$props.$user);
     		if ("$layout" in $$props) layout.set($layout = $$props.$layout);
     	};
 
-    	return { user, layout };
+    	return { user, config, layout };
     }
 
     class Leftpanel extends SvelteComponentDev {
@@ -2183,7 +2183,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			attr_dev(div, "class", div_class_value = "" + (ctx.namespace + " Layout"));
-    			add_location(div, file$5, 27, 0, 791);
+    			add_location(div, file$5, 27, 0, 782);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -2282,7 +2282,7 @@ var app = (function () {
     			setState("tree", null);
     		} else {
     			var protectMode = false;
-    			var url = "ws://" + location.host + "/unittest/" + (protectMode ? "pri/" : "pub/") + "tree";
+    			var url = "ws://" + location.host + "/" + (protectMode ? "pri/" : "pub/") + "tree";
     			var sdk = GetSDKSingleton();
 
     			sdk.useTree("Unittest", url).done(function (tree) {
@@ -2922,32 +2922,32 @@ var app = (function () {
 
     			if (!default_slot) {
     				attr_dev(div0, "class", "form");
-    				add_location(div0, file$8, 573, 78, 19487);
+    				add_location(div0, file$8, 572, 78, 19486);
     				set_style(td0, "min-width", "250px");
     				set_style(td0, "width", "100%");
     				set_style(td0, "vertical-align", "top");
-    				add_location(td0, file$8, 573, 20, 19429);
-    				add_location(tr0, file$8, 572, 16, 19404);
+    				add_location(td0, file$8, 572, 20, 19428);
+    				add_location(tr0, file$8, 571, 16, 19403);
     				attr_dev(div1, "class", "result-check");
-    				add_location(div1, file$8, 578, 28, 19694);
+    				add_location(div1, file$8, 577, 28, 19693);
     				attr_dev(div2, "class", "result-content");
-    				add_location(div2, file$8, 579, 28, 19755);
+    				add_location(div2, file$8, 578, 28, 19754);
     				attr_dev(div3, "class", "result http-response");
-    				add_location(div3, file$8, 577, 24, 19631);
+    				add_location(div3, file$8, 576, 24, 19630);
     				set_style(td1, "vertical-align", "top");
-    				add_location(td1, file$8, 576, 20, 19575);
-    				add_location(tr1, file$8, 575, 16, 19550);
+    				add_location(td1, file$8, 575, 20, 19574);
+    				add_location(tr1, file$8, 574, 16, 19549);
     				set_style(table, "width", "100%");
     				set_style(table, "vertical-align", "top");
-    				add_location(table, file$8, 571, 12, 19342);
-    				add_location(div4, file$8, 570, 8, 19323);
+    				add_location(table, file$8, 570, 12, 19341);
+    				add_location(div4, file$8, 569, 8, 19322);
     			}
 
-    			add_location(pre, file$8, 589, 74, 20061);
+    			add_location(pre, file$8, 588, 74, 20060);
     			set_style(div5, "display", "none");
     			attr_dev(div5, "class", "http-response pass no-pass expected");
-    			add_location(div5, file$8, 589, 4, 19991);
-    			add_location(div6, file$8, 568, 0, 19283);
+    			add_location(div5, file$8, 588, 4, 19990);
+    			add_location(div6, file$8, 567, 0, 19282);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");

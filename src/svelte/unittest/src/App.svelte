@@ -14,7 +14,7 @@ const unsubscribe = user.subscribe(value =>{
         setState('tree',null)
     }else{
         var protectMode= false
-        var url = "ws://"+location.host+"/unittest/"+(protectMode ? "pri/" : "pub/")+"tree"
+        var url = "ws://"+location.host+"/"+(protectMode ? "pri/" : "pub/")+"tree"
         var sdk = GetSDKSingleton()
         sdk.useTree('Unittest',url).done(function(tree){
             setState('sdk',sdk)

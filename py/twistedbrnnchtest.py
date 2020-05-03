@@ -22,37 +22,10 @@ from twisted.internet import reactor
 
 def initTwistedReactor():
     try:
+        # Since reactor.run is a blocking call,
+        # That makes "callWhenRunning()" becomes a blocking call in golang too
         reactor.run(installSignalHandlers=False)
     except:
         traceback.print_exc()
+
 callWhenRunning(initTwistedReactor)
-
-#import configparser
-class TwistedBranch(BaseBranch):
-    def __init__(self):
-        super(TwistedBranch,self).__init__('twisted')
-       
-    def beReady(self,treeroot):
-        #self.parser = configparser.ConfigParser()
-        self.export()
-
-        def countDown(c,deferred):
-            print('--callLater works--','*' * 10*(1+c))
-            if c < 3:
-                reactor.callLater(1,countDown,c+1,deferred)
-            else:
-                deferred.callback('--callLater works-- stop')
-
-        def TwistedBranchReady(deferred):
-            print('twisted reactor.callWhenRunning works')
-            reactor.callLater(1,countDown,0,deferred)
-
-        deferred = defer.Deferred()
-
-        def done(mesg):
-            print(mesg,' and Deferred works')
-        deferred.addCallback(done)
-        reactor.callWhenRunning(TwistedBranchReady,deferred)
-        return True
-
-GoTrees.Unittest.addBranch(TwistedBranch())

@@ -6,15 +6,15 @@ import (
 	"strconv"
     "time"
     "os/exec"
-	objsh "github.com/iapyeh/fastjob"
-	objshpy "github.com/iapyeh/fastjob-python3"
+	fastjob "github.com/iapyeh/fastjob"
+	fastjob_python3 "github.com/iapyeh/fastjob-python3"
 	model "github.com/iapyeh/fastjob/model"
 )
 
-type BaseBranch = objsh.BaseBranch
-type TreeRoot = objsh.TreeRoot
-type TreeCallCtx = objsh.TreeCallCtx
-type User = objsh.User
+type BaseBranch = fastjob.BaseBranch
+type TreeRoot = fastjob.TreeRoot
+type TreeCallCtx = fastjob.TreeCallCtx
+type User = fastjob.User
 
 type TestBranch struct {
 	BaseBranch
@@ -107,7 +107,7 @@ func (self *TestBranch) Progress(callCtx *TreeCallCtx) {
 	progress = func(times int) {
 		send(times)
 		if times > 0 {
-			objsh.SetTimeout(func() {
+			fastjob.SetTimeout(func() {
 				progress(times - 1)
 			}, uint(interval))
 		}
@@ -139,7 +139,7 @@ func (self *TestBranch) Clock(callCtx *TreeCallCtx) {
 
 	/*
 		//method 1
-		objsh.SetInterval(func(stop *chan bool) {
+		fastjob.SetInterval(func(stop *chan bool) {
 			if callCtx.IsClosed() {
 				*stop <- true
 				return
@@ -156,7 +156,7 @@ func (self *TestBranch) Clock(callCtx *TreeCallCtx) {
 		fmt.Println(currentTime)
 		callCtx.Notify(&currentTime)
 	}
-	stop := objsh.SetInterval(reply, interval)
+	stop := fastjob.SetInterval(reply, interval)
 	/*
 		callCtx.WsCtx.On("Close", "TokenToRemove", func() {
 			// should "off" this callback
@@ -179,7 +179,7 @@ func (self *TestBranch) Clock(callCtx *TreeCallCtx) {
 		m := sync.Mutex{}
 		issue = func() {
 			m.Lock()
-			stop = objsh.SetTimeout(func() {
+			stop = fastjob.SetTimeout(func() {
 				currentTime := time.Now().Format("15:04:05")
 				fmt.Println(currentTime)
 				callCtx.Notify(&currentTime)
@@ -224,7 +224,7 @@ func (self *TestBranch) ClockBgRun(callCtx *TreeCallCtx) {
 		fmt.Println(currentTime)
 		callCtx.Notify(&currentTime)
 	}
-	stop := objsh.SetInterval(reply, interval)
+	stop := fastjob.SetInterval(reply, interval)
 	callCtx.On("Kill", func() {
 		//Will be called both on ctx cancelled or ctx's websocket lost connection
 		log.Println("Clock() stopped because of cancell been called")
@@ -352,32 +352,29 @@ func (self *GrpcStyle) Hello(callCtx *TreeCallCtx) {
 }
 */
 
-var guestTree *objsh.TreeRoot
+var guestTree *fastjob.TreeRoot
 
-//var memberTree *objsh.TreeRoot
+//var memberTree *fastjob.TreeRoot
 
 func init() {
 	// Two styles to add a branch
 	// branches in guessTree has prefix "Tree", for example Tree.UnitTest.Clock
-	guestTree = objsh.UseTree("Unittest", "/unittest/pub/tree", objsh.PublicMode)
+	guestTree = fastjob.UseTree("Unittest", "/pub/tree", fastjob.PublicMode)
 	guestTree.AddBranchWithName(&TestBranch{},"Testing")
 
 	//Python3
-	Py3 := objshpy.NewPy3()
+	Py3 := fastjob_python3.NewPy3()
 	Py3.AddTree(guestTree)
 
 	// a single python script
-	//Py3.ImportModule("pytest/pybranches.py")
+	Py3.ImportModule("py/tree/branches.py")
 
-    // 2019-11-21T02:09:33+00:00
-    //  Temporary commented-out, since "py" has been imported in routes.go
-    // a python package in a folder    
-	Py3.ImportModule("py")
 
-	guestTree.BeReady()
+    fastjob.RunInMain(1,func(){
+        // notify branches in guestTruee to get ready (ie. ask them to do initialization of themselves)
+        guestTree.BeReady()
 
-	objshpy.CallWhenRunning()
-
-	guestTree.Dump()
-
+        // dump the tree's branches to console
+        guestTree.Dump()
+    })
 }

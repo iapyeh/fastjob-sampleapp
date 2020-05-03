@@ -8,6 +8,8 @@ let message = importState('message')
 let config = importState('config')
 let layout = importState('layout')
 let username = ''
+
+// inital nodes on the sidebar
 let nodes = [
     { id: 'overview', text: 'Overview', img: 'icon-folder', expanded: true, group: true,
         nodes: [ 

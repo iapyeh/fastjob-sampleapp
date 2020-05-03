@@ -254,9 +254,9 @@ window.addEventListener('DOMContentLoaded',function(){
         var protected = document.getElementById('protected-up').checked
         var resp_bytes = true
         if (resp_bytes){
-            var url = "//"+location.host+"/unittest"+(protected ? "/pri" : "")+"/py/upload_resp_bytes"
+            var url = "//"+location.host+""+(protected ? "/pri" : "")+"/py/upload_resp_bytes"
         }else{
-            var url = "//"+location.host+"/unittest"+(protected ? "/pri" : "")+"/py/upload"
+            var url = "//"+location.host+""+(protected ? "/pri" : "")+"/py/upload"
         }
         var i = 0
         var do_upload = function(){

@@ -1,26 +1,29 @@
 /*
- use Svelte store as
+ This is a utility module. use Svelte store as
  1. an event channel
  2. a configuration store
  3. a constant / singleton (such as jquery ) store
 */
 import { writable, readable } from 'svelte/store';
-//import jQuery from "jquery";
+
+
+let states = {}
+
+// Initially hard coded configuration
+const config = {
+    loginUrl : '/login'
+    ,logoutUrl : '/pri/logout'
+    // see what headers sent by this browser
+    // used for benchmark (wrk) to set headers
+    ,allHeadersUrl:'/pri/allheaders'
+    ,allSidebarNodesUrl:'/pri/static/sidebarAllNodes.json'
+}
+states['config'] = readable(config)
 
 /* 
  Svelte store-based event system 
 */
 
-let states = {}
-const config = {
-    loginUrl : '/unittest/login'
-    ,logoutUrl : '/unittest/pri/logout'
-    // see what headers sent by this browser
-    // used for benchmark (wrk) to set headers
-    ,allHeadersUrl:'/unittest/pri/allheaders'
-    ,allSidebarNodesUrl:'/unittest/pri/static/sidebarAllNodes.json'
-}
-states['config'] = readable(config)
 export const importState = (key,defaultValue) =>{
     if (typeof(states[key]) == 'undefined'){
         states[key] = writable((typeof defaultValue == 'undefined' ? null : defaultValue));
@@ -28,7 +31,7 @@ export const importState = (key,defaultValue) =>{
     return states[key]
 }
 export const getState = (key,defaultValue) =>{
-    console.log('getState() deprecated, use importState instead')
+    console.warn('getState() deprecated, use importState instead')
     return importState(key,defaultValue)
 }
 export const hasState = (key) => {
@@ -91,7 +94,6 @@ export let event = {
     once: onceEvent,
     fire:fireEvent
 }
-
 
 // in  *.js, $state is not accessible, call getState instead.
 /*

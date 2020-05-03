@@ -1,25 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os/signal"
-
 	"os"
 	"path/filepath"
-	"time"
-
-	"github.com/valyala/fasthttp"
-
+    "flag"
 	fastjob "github.com/iapyeh/fastjob"
-
     auth "github.com/iapyeh/fastjob/auth/leveldb"
 )
 
 var (
 	cwd  string
-	port int
-	//Py3  *py3.Py3Interpreter
 )
 
 func init() {
@@ -76,38 +67,20 @@ func init() {
 
 }
 
-//StartServer is called for start server
-func StartServer() {
-
-	port = 2990
-
-	log.Printf("Listen on port %v  (fasthttp)\n", port)
-
-	router := fastjob.Router
-	server := &fasthttp.Server{
-		Handler: router.Handler,
-		// Every response will contain 'Server: UnitTest Server' header.
-		Name: "UnitTest Server",
-		// Other Server settings may be set here.
-	}
-
-	//必須在listen之前設定好
-	server.ReadTimeout = time.Second * 20        // 考慮上傳時需要比較多的時間
-	server.MaxRequestBodySize = 10 * 1024 * 1024 //10MB,fasthttp預設是4MB
-
-	if err := server.ListenAndServe(fmt.Sprintf(":%v", port)); err != nil {
-		log.Fatalf("error in ListenAndServe: %s", err)
-		panic(fmt.Sprintf("Server error:%s", err))
-	}
-
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, os.Interrupt)
-	<-sigCh
-	signal.Stop(sigCh)
-	signal.Reset(os.Interrupt)
-	server.Shutdown()
-
-}
 func main() {
-	StartServer()
+    fastjob.Main()
+    var port = flag.Int("port",2990,"listening port")
+    var serverName  = flag.String("server-name","Fastjob SampleApp","server name")
+    var readTimeout = flag.Int("read-timeout",10,"read timeout in seconds,default is 10 seconds")
+    var maxRequestBodySzie = flag.Int("max-body-size", 10 * 1024 * 1024,"max body size in bytes")
+    flag.Parse()
+    options := map[string]interface{} {
+        "port":*port,
+        "serverName":*serverName,
+        // uploading requires more read time
+        "readTimeout":*readTimeout, //in seconds
+        // 10MB in bytes, default of fasthttp is 4MB
+        "maxRequestBodySize":*maxRequestBodySzie,
+    }
+    fastjob.StartServer(options)
 }
