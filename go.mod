@@ -1,14 +1,17 @@
 module github.com/iapyeh/fastjob-sampleapp
 
-go 1.13
+go 1.15
 
 require (
-	github.com/golang/protobuf v1.4.0
-	github.com/iapyeh/fastjob v0.0.0-20200416034333-6404ca71222f
-	github.com/iapyeh/fastjob-python3 v0.0.0-20200225083117-70774c9a0a46
-	github.com/iapyeh/go-python3 v0.0.0-20200502140543-6a69e55d2187
-	github.com/tsliwowicz/go-wrk v0.0.0-20190307083600-9e85e2e35df0 // indirect
-	github.com/valyala/fasthttp v1.12.0
+	github.com/dgrr/fastws v1.0.3
+	github.com/fasthttp/router v1.3.4
+	github.com/gobwas/ws v1.0.4
+	github.com/golang/protobuf v1.4.3
+	github.com/golang/snappy v0.0.2
+	github.com/iapyeh/fastjob v1.1.6
+	github.com/iapyeh/fastjob-python3 v0.0.0-20200503143808-f1285d793f8d
+	github.com/iapyeh/go-python3 v0.0.0-20200726030521-3962d9f7c333
+	nhooyr.io/websocket v1.8.6
 )
 
 // development settings
